@@ -90,8 +90,13 @@ Sequence<T>* ArraySequence<T>::InsertAt(const T& item, int index) {
 }
 
 template <class T>
+T& ArraySequence<T>::operator[](int index) {
+    return (*items)[index]; // Делегируем в DynamicArray
+}
+
+template <class T>
 const T& ArraySequence<T>::operator[](int index) const {
-    return this->Get(index);
+    return (*items)[index]; // Делегируем в DynamicArray
 }
 
 template <class T>

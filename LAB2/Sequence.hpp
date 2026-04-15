@@ -47,6 +47,8 @@ public:
     virtual Sequence<T>* Map(T (*mapper)(const T& element)) const;
     virtual Sequence<T>* Where(bool (*predicate)(const T& element)) const;
     virtual T Reduce(T (*reduce_func)(const T& accumulator, const T& current), const T& start_element) const;
+
+	virtual T& operator[](int index) = 0;
 };
 
 

@@ -152,6 +152,18 @@ void DynamicArray<T>::Resize(int newSize) {
     capacity = newCapacity;
 }
 
+template <class T>
+T& DynamicArray<T>::operator[](int index) {
+    if (index < 0 || index >= size) throw IndexOutOfRange("Error: Index out of range!");
+    return data[index];
+}
+
+template <class T>
+const T& DynamicArray<T>::operator[](int index) const {
+    if (index < 0 || index >= size) throw IndexOutOfRange("Error: Index out of range!");
+    return data[index];
+}
+
 // --- Фабрика итератора ---
 template <class T>
 IEnumerator<T>* DynamicArray<T>::GetEnumerator() const {

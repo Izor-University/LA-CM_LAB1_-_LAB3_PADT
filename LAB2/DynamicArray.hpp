@@ -65,6 +65,8 @@ public:
     void Set(int index, const T& value);
     void Resize(int newSize);
     void RemoveAt(int index);
+	T& operator[](int index);
+    const T& operator[](int index) const;
 };
 
 #include "DynamicArray.tpp"
