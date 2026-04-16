@@ -1,45 +1,34 @@
 #ifndef SQUARE_MATRIX_HPP
 #define SQUARE_MATRIX_HPP
-#include "IMatrix.hpp"
-#include "MutableArraySequence.hpp"
-#include "Exceptions.hpp"
-#include "MathUtils.hpp"
+
+#include "Matrix.hpp"
 #include "Vector.hpp"
+#include "Exceptions.hpp"
 
 template <class T>
-class SquareMatrix : public IMatrix<T> {
-private:
-    MutableArraySequence<T>* data;
-    int size;
-    int Get1DIndex(int row, int col) const { return row * size + col; }
-
+class SquareMatrix : public Matrix<T> {
 public:
-    explicit SquareMatrix(int n);
-    SquareMatrix(int n, const T& defaultValue);
-    SquareMatrix(const SquareMatrix<T>& other);
-    SquareMatrix(SquareMatrix<T>&& other) noexcept;
-    ~SquareMatrix() override;
+    explicit SquareMatrix(int n) : Matrix<T>(n, n) {}
+    SquareMatrix(int n, const T& defaultValue) : Matrix<T>(n, n, defaultValue) {}
 
-    SquareMatrix<T>& operator=(const SquareMatrix<T>& other);
-    SquareMatrix<T>& operator=(SquareMatrix<T>&& other) noexcept;
+    virtual ~SquareMatrix() override = default;
+    SquareMatrix(const SquareMatrix<T>& other) = default;
+    SquareMatrix(SquareMatrix<T>&& other) noexcept = default;
+    SquareMatrix<T>& operator=(const SquareMatrix<T>& other) = default;
+    SquareMatrix<T>& operator=(SquareMatrix<T>&& other) noexcept = default;
 
-    int GetRows() const override;
-    int GetCols() const override;
+    // 1. Умножение на вектор
+    Vector<T> operator*(const Vector<T>& x) const;
 
-    // Legacy support for IMatrix
-    const T& Get(int row, int col) const override { return (*this)(row, col); }
-    void Set(int row, int col, const T& value) override { (*this)(row, col) = value; }
+    // 2. Умножение матрицы на матрицу
+    SquareMatrix<T> operator*(const SquareMatrix<T>& other) const;
 
-    // --- C++ Idiomatic Access ---
-    T& operator()(int row, int col);
-    const T& operator()(int row, int col) const;
+    // 3. След матрицы (Сумма элементов главной диагонали)
+    T Trace() const;
 
-    SquareMatrix<T> operator+(const SquareMatrix<T>& other) const;
-    SquareMatrix<T> operator*(const T& scalar) const;
-    Vector<T> operator*(const Vector<T>& x) const; // Матрица на вектор
-
-    double Norm() const;
-    void SwapRows(int row1, int row2);
+    // 4. Статический фабричный метод: Создание единичной матрицы
+    static SquareMatrix<T> Identity(int n);
 };
+
 #include "SquareMatrix.tpp"
-#endif
+#endif // SQUARE_MATRIX_HPP

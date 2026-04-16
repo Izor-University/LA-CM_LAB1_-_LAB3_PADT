@@ -1,13 +1,13 @@
 template <class T>
-Vector<T> MatrixSolver<T>::SolveGaussNoPivot(SquareMatrix<T> U, Vector<T> y) {
-    int n = U.GetRows();
+Vector<T> MatrixSolver<T>::SolveGaussNoPivot(SquareMatrix<T> A, Vector<T> y) {
+    int n = A.GetRows();
     if (y.GetSize() != n) throw InvalidArgument("Mismatch");
 
     for (int k = 0; k < n - 1; ++k) {
-        if (MathUtils::Abs(U(k, k)) < 1e-9) throw SingularMatrixError("Zero pivot");
+        if (MathUtils::Abs(A(k, k)) < 1e-9) throw SingularMatrixError("Zero pivot");
         for (int i = k + 1; i < n; ++i) {
-            T factor = U(i, k) / U(k, k);
-            for (int j = k; j < n; ++j) U(i, j) = U(i, j) - factor * U(k, j);
+            T factor = A(i, k) / A(k, k);
+            for (int j = k; j < n; ++j) A(i, j) = A(i, j) - factor * A(k, j);
             y[i] = y[i] - factor * y[k];
         }
     }
@@ -22,28 +22,28 @@ Vector<T> MatrixSolver<T>::SolveGaussNoPivot(SquareMatrix<T> U, Vector<T> y) {
 }
 
 template <class T>
-Vector<T> MatrixSolver<T>::SolveGaussPartialPivot(SquareMatrix<T> U, Vector<T> y) {
-    int n = U.GetRows();
+Vector<T> MatrixSolver<T>::SolveGaussPartialPivot(SquareMatrix<T> A, Vector<T> y) {
+    int n = A.GetRows();
     if (y.GetSize() != n) throw InvalidArgument("Mismatch");
 
     for (int k = 0; k < n; ++k) {
         int maxRow = k;
-        double maxVal = MathUtils::Abs(U(k, k));
+        double maxVal = MathUtils::Abs(A(k, k));
 
         for (int i = k + 1; i < n; ++i) {
-            double currentAbs = MathUtils::Abs(U(i, k));
+            double currentAbs = MathUtils::Abs(A(i, k));
             if (currentAbs > maxVal) { maxVal = currentAbs; maxRow = i; }
         }
         if (maxVal < 1e-9) throw SingularMatrixError("Matrix is singular");
 
         if (maxRow != k) {
-            U.SwapRows(k, maxRow);
+            A.SwapRows(k, maxRow);
             T tempY = y[k]; y[k] = y[maxRow]; y[maxRow] = tempY;
         }
 
         for (int i = k + 1; i < n; ++i) {
-            T factor = U(i, k) / U(k, k);
-            for (int j = k; j < n; ++j) U(i, j) = U(i, j) - factor * U(k, j);
+            T factor = A(i, k) / A(k, k);
+            for (int j = k; j < n; ++j) A(i, j) = A(i, j) - factor * A(k, j);
             y[i] = y[i] - factor * y[k];
         }
     }

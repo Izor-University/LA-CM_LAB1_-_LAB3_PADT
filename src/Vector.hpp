@@ -27,7 +27,7 @@ public:
     Vector<T> operator+(const Vector<T>& other) const;
     Vector<T> operator-(const Vector<T>& other) const;
     Vector<T> operator*(const T& scalar) const;
-    T operator*(const Vector<T>& other) const; // Dot product
+    T operator*(const Vector<T>& other) const;
 
     double Norm() const;
 };

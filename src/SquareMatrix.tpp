@@ -1,104 +1,71 @@
-template <class T>
-SquareMatrix<T>::SquareMatrix(int n) : size(n) {
-    if (n <= 0) throw IndexOutOfRange();
-    data = new MutableArraySequence<T>();
-    for (int i = 0; i < n * n; ++i) data->Append(T());
-}
-
-template <class T>
-SquareMatrix<T>::SquareMatrix(int n, const T& defaultValue) : size(n) {
-    if (n <= 0) throw IndexOutOfRange();
-    data = new MutableArraySequence<T>();
-    for (int i = 0; i < n * n; ++i) data->Append(defaultValue);
-}
-
-template <class T>
-SquareMatrix<T>::SquareMatrix(const SquareMatrix<T>& other) : size(other.size) {
-    data = new MutableArraySequence<T>(*(other.data));
-}
-
-template <class T>
-SquareMatrix<T>::SquareMatrix(SquareMatrix<T>&& other) noexcept : data(other.data), size(other.size) {
-    other.data = nullptr;
-    other.size = 0;
-}
-
-template <class T>
-SquareMatrix<T>::~SquareMatrix() { delete data; }
-
-template <class T>
-SquareMatrix<T>& SquareMatrix<T>::operator=(const SquareMatrix<T>& other) {
-    if (this != &other) { delete data; size = other.size; data = new MutableArraySequence<T>(*(other.data)); }
-    return *this;
-}
-
-template <class T>
-SquareMatrix<T>& SquareMatrix<T>::operator=(SquareMatrix<T>&& other) noexcept {
-    if (this != &other) { delete data; data = other.data; size = other.size; other.data = nullptr; }
-    return *this;
-}
-
-template <class T>
-int SquareMatrix<T>::GetRows() const { return size; }
-template <class T>
-int SquareMatrix<T>::GetCols() const { return size; }
-
-template <class T>
-T& SquareMatrix<T>::operator()(int row, int col) {
-    if (row < 0 || row >= size || col < 0 || col >= size) throw IndexOutOfRange();
-    return (*data)[Get1DIndex(row, col)];
-}
-
-template <class T>
-const T& SquareMatrix<T>::operator()(int row, int col) const {
-    if (row < 0 || row >= size || col < 0 || col >= size) throw IndexOutOfRange();
-    return (*data)[Get1DIndex(row, col)];
-}
-
-template <class T>
-SquareMatrix<T> SquareMatrix<T>::operator+(const SquareMatrix<T>& other) const {
-    if (this->size != other.size) throw InvalidArgument("Mismatch");
-    SquareMatrix<T> result(size);
-    for (int i = 0; i < size * size; ++i) result.data->operator[](i) = (*data)[i] + (*other.data)[i];
-    return result;
-}
-
-template <class T>
-SquareMatrix<T> SquareMatrix<T>::operator*(const T& scalar) const {
-    SquareMatrix<T> result(size);
-    for (int i = 0; i < size * size; ++i) result.data->operator[](i) = (*data)[i] * scalar;
-    return result;
-}
-
+// =========================================================================
+// 1. Умножение квадратной матрицы на вектор
+// =========================================================================
 template <class T>
 Vector<T> SquareMatrix<T>::operator*(const Vector<T>& x) const {
-    if (size != x.GetSize()) throw InvalidArgument("Mismatch");
-    Vector<T> result(size);
-    for (int i = 0; i < size; ++i) {
+    if (this->cols != x.GetSize()) throw InvalidArgument("Size mismatch");
+    Vector<T> result(this->rows);
+    for (int i = 0; i < this->rows; ++i) {
         T sum = T();
-        for (int j = 0; j < size; ++j) sum = sum + (*this)(i, j) * x[j];
+        for (int j = 0; j < this->cols; ++j) {
+            sum = sum + (*this)(i, j) * x[j];
+        }
         result[i] = sum;
     }
     return result;
 }
 
+// =========================================================================
+// 2. Умножение квадратной матрицы на квадратную матрицу
+// =========================================================================
 template <class T>
-double SquareMatrix<T>::Norm() const {
-    double maxNorm = 0.0;
-    for (int i = 0; i < size; ++i) {
-        double currentSum = 0.0;
-        for (int j = 0; j < size; ++j) currentSum += MathUtils::Abs((*this)(i, j));
-        if (currentSum > maxNorm) maxNorm = currentSum;
+SquareMatrix<T> SquareMatrix<T>::operator*(const SquareMatrix<T>& other) const {
+    if (this->cols != other.rows) throw InvalidArgument("Matrix multiplication mismatch");
+
+    SquareMatrix<T> result(this->rows);
+
+    for (int i = 0; i < this->rows; ++i) {
+        for (int j = 0; j < other.cols; ++j) {
+            T sum = T();
+            for (int k = 0; k < this->cols; ++k) {
+                // i-тая строка первой матрицы умножается на j-тый столбец второй
+                sum = sum + (*this)(i, k) * other(k, j);
+            }
+            result(i, j) = sum;
+        }
     }
-    return maxNorm;
+    return result;
 }
 
+// =========================================================================
+// 3. След матрицы (Trace)
+// =========================================================================
 template <class T>
-void SquareMatrix<T>::SwapRows(int row1, int row2) {
-    if (row1 == row2) return;
-    for (int j = 0; j < size; ++j) {
-        T temp = (*this)(row1, j);
-        (*this)(row1, j) = (*this)(row2, j);
-        (*this)(row2, j) = temp;
+T SquareMatrix<T>::Trace() const {
+    T sum = T();
+    for (int i = 0; i < this->rows; ++i) {
+        sum = sum + (*this)(i, i); // Складываем элементы (0,0), (1,1) и т.д.
     }
+    return sum;
+}
+
+// =========================================================================
+// 4. Генерация единичной матрицы (Identity)
+// =========================================================================
+template <class T>
+SquareMatrix<T> SquareMatrix<T>::Identity(int n) {
+    if (n <= 0) throw IndexOutOfRange("Size must be positive");
+
+    SquareMatrix<T> result(n); // Создается заполненная нулями
+
+    // В C++ нет универсальной "единицы" для шаблонов, как T(), который дает ноль.
+    // Поэтому мы кастуем обычную единицу к типу T.
+    // Для double это 1.0, для int это 1, для Complex это (1, 0).
+    T one = static_cast<T>(1);
+
+    for (int i = 0; i < n; ++i) {
+        result(i, i) = one;
+    }
+
+    return result;
 }

@@ -10,10 +10,9 @@
 template <class T>
 class MatrixSolver {
 public:
-    static Vector<T> SolveGaussNoPivot(SquareMatrix<T> U, Vector<T> y);
-    static Vector<T> SolveGaussPartialPivot(SquareMatrix<T> U, Vector<T> y);
+    static Vector<T> SolveGaussNoPivot(SquareMatrix<T> A, Vector<T> y);
+    static Vector<T> SolveGaussPartialPivot(SquareMatrix<T> A, Vector<T> y);
 
-    // Возврат Pair по значению (без указателей!)
     static Pair<TriangularMatrix<T>, TriangularMatrix<T>> DecomposeLU(SquareMatrix<T> A);
     static Vector<T> SolveUsingLU(const TriangularMatrix<T>& L, const TriangularMatrix<T>& U, const Vector<T>& b);
 };
