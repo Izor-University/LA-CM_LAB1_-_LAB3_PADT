@@ -7,7 +7,7 @@ class MathUtils {
 private:
     static double Sqrt(double n) {
         if (n <= 0.0) return 0.0;
-        double x = n, y = 1.0, e = 0.000001;
+        double x = n, y = 1.0, e = 1e-15;
         while (x - y > e) {
             x = (x + y) / 2.0;
             y = n / x;

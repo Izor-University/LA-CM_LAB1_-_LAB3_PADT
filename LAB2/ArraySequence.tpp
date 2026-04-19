@@ -39,6 +39,103 @@ int ArraySequence<T>::GetLength() const {
     return items->GetSize();
 }
 
+// --- Операции ---
+template <class T>
+Sequence<T>* ArraySequence<T>::GetSubsequence(int startIndex, int endIndex) const {
+    int len = this->GetLength();
+    if (startIndex < 0 || startIndex >= len || endIndex < 0 || endIndex >= len || startIndex > endIndex) {
+        throw IndexOutOfRange("GetSubsequence: Invalid indices");
+    }
+
+    int count = endIndex - startIndex + 1;
+
+    // Создаем пустую оболочку и сразу выделяем память
+    ArraySequence<T>* result = static_cast<ArraySequence<T>*>(this->CreateEmpty());
+    result->items->Resize(count);
+
+    // Прямое копирование
+    for (int i = 0; i < count; ++i) {
+        result->items->Set(i, this->items->Get(startIndex + i));
+    }
+
+    return result;
+}
+
+template <class T>
+Sequence<T>* ArraySequence<T>::Concat(Sequence<T>* list) const {
+    ArraySequence<T>* result = static_cast<ArraySequence<T>*>(this->CreateEmpty());
+
+    int otherLen = (list != nullptr) ? list->GetLength() : 0;
+    result->items->Resize(this->GetLength() + otherLen);
+
+    int destIndex = 0;
+    // Копируем себя
+    for (int i = 0; i < this->GetLength(); ++i) {
+        result->items->Set(destIndex++, this->items->Get(i));
+    }
+
+    // Копируем other полиморфно
+    if (list != nullptr) {
+        IEnumerator<T>* en = list->GetEnumerator();
+        try {
+            while (en->MoveNext()) {
+                result->items->Set(destIndex++, en->GetCurrent());
+            }
+        } catch (...) {
+            delete en;
+            delete result;
+            throw;
+        }
+        delete en;
+    }
+
+    return result;
+}
+
+template <class T>
+Sequence<T>* ArraySequence<T>::Slice(int index, int count, Sequence<T>* insertSeq) {
+    int len = this->GetLength();
+    int start = (index < 0) ? (len + index) : index;
+    if (start < 0 || start > len) throw IndexOutOfRange("Slice: Out of bounds");
+    if (count < 0) count = 0;
+    if (start + count > len) count = len - start;
+
+    ArraySequence<T>* result = static_cast<ArraySequence<T>*>(this->CreateEmpty());
+    int insertLen = (insertSeq != nullptr) ? insertSeq->GetLength() : 0;
+
+    // ОДИН раз выделяем финальный размер
+    result->items->Resize(len - count + insertLen);
+
+    int destIndex = 0;
+
+    // 1. До вырезанного куска
+    for (int i = 0; i < start; ++i) {
+        result->items->Set(destIndex++, this->items->Get(i));
+    }
+
+    // 2. Вставка
+    if (insertSeq != nullptr) {
+        IEnumerator<T>* en = insertSeq->GetEnumerator();
+        try {
+            while (en->MoveNext()) {
+                result->items->Set(destIndex++, en->GetCurrent());
+            }
+        } catch (...) {
+            delete en;
+            delete result;
+            throw;
+        }
+        delete en;
+    }
+
+    // 3. После вырезанного куска
+    for (int i = start + count; i < len; ++i) {
+        result->items->Set(destIndex++, this->items->Get(i));
+    }
+
+    return result;
+}
+
 // --- Внутренние методы модификации ---
 template <class T>
 Sequence<T>* ArraySequence<T>::AppendInternal(const T& item) {
@@ -91,12 +188,12 @@ Sequence<T>* ArraySequence<T>::InsertAt(const T& item, int index) {
 
 template <class T>
 T& ArraySequence<T>::operator[](int index) {
-    return (*items)[index]; // Делегируем в DynamicArray
+    return (*items)[index];
 }
 
 template <class T>
 const T& ArraySequence<T>::operator[](int index) const {
-    return (*items)[index]; // Делегируем в DynamicArray
+    return (*items)[index];
 }
 
 template <class T>

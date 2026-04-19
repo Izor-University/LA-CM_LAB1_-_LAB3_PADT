@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "../src/Vector.hpp"
-#include "../src/Exceptions.hpp"
+#include "../LAB2/Exceptions.hpp"
 #include "../src/Complex.hpp"
 
 // =========================================================================

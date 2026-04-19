@@ -34,7 +34,14 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& other) {
 
 template <class T>
 Vector<T>& Vector<T>::operator=(Vector<T>&& other) noexcept {
-    if (this != &other) { delete data; data = other.data; size = other.size; other.data = nullptr; }
+    if (this != &other) {
+        delete data;
+        data = other.data;
+        size = other.size;
+
+        other.data = nullptr;
+        other.size = 0;
+    }
     return *this;
 }
 

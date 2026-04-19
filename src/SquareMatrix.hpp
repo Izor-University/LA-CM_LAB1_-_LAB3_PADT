@@ -22,6 +22,8 @@ public:
 
     // 2. Умножение матрицы на матрицу
     SquareMatrix<T> operator*(const SquareMatrix<T>& other) const;
+    using Matrix<T>::operator*;
+    using Matrix<T>::operator+;
 
     // 3. След матрицы (Сумма элементов главной диагонали)
     T Trace() const;
