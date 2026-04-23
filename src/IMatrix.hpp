@@ -1,13 +1,17 @@
 #ifndef IMATRIX_HPP
 #define IMATRIX_HPP
 
+// Базовый интерфейс матрицы
 template <class T>
 class IMatrix {
 public:
     virtual ~IMatrix() = default;
 
+    // Доступ к элементам
     virtual const T& Get(int row, int col) const = 0;
     virtual void Set(int row, int col, const T& value) = 0;
+
+    // Декомпозиция
     virtual int GetRows() const = 0;
     virtual int GetCols() const = 0;
 };

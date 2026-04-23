@@ -3,32 +3,36 @@
 
 #include "Matrix.hpp"
 #include "Vector.hpp"
-#include "Exceptions.hpp"
+#include "../LAB2/Exceptions.hpp"
 
+// Квадратная матрица
 template <class T>
 class SquareMatrix : public Matrix<T> {
 public:
-    explicit SquareMatrix(int n) : Matrix<T>(n, n) {}
-    SquareMatrix(int n, const T& defaultValue) : Matrix<T>(n, n, defaultValue) {}
+    // Конструкторы
+    explicit SquareMatrix(int n) : Matrix<T>(n, n) {
+    }
 
+    SquareMatrix(int n, const T& defaultValue) : Matrix<T>(n, n, defaultValue) {
+    }
+
+    // Жизненный цикл (Rule of Zero)
     virtual ~SquareMatrix() override = default;
     SquareMatrix(const SquareMatrix<T>& other) = default;
     SquareMatrix(SquareMatrix<T>&& other) noexcept = default;
     SquareMatrix<T>& operator=(const SquareMatrix<T>& other) = default;
     SquareMatrix<T>& operator=(SquareMatrix<T>&& other) noexcept = default;
 
-    // 1. Умножение на вектор
-    Vector<T> operator*(const Vector<T>& x) const;
-
-    // 2. Умножение матрицы на матрицу
-    SquareMatrix<T> operator*(const SquareMatrix<T>& other) const;
+    // Втягивание базовых операторов
     using Matrix<T>::operator*;
     using Matrix<T>::operator+;
 
-    // 3. След матрицы (Сумма элементов главной диагонали)
+    // Математика квадратных матриц
+    Vector<T> operator*(const Vector<T>& x) const;
+    SquareMatrix<T> operator*(const SquareMatrix<T>& other) const;
     T Trace() const;
 
-    // 4. Статический фабричный метод: Создание единичной матрицы
+    // Фабричный метод
     static SquareMatrix<T> Identity(int n);
 };
 

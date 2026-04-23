@@ -1,44 +1,54 @@
 #ifndef COMPLEX_HPP
 #define COMPLEX_HPP
 
-#include "Exceptions.hpp"
+#include "../LAB2/Exceptions.hpp"
 
+// Комплексное число
 class Complex {
 public:
-    double re; // Действительная часть
-    double im; // Мнимая часть
+    // Поля
+    double re;
+    double im;
 
-    // Конструктор по умолчанию позволяет неявно конвертировать double в Complex
-    Complex(double r = 0.0, double i = 0.0) : re(r), im(i) {}
+    // Конструктор
+    Complex(double r = 0.0, double i = 0.0) : re(r), im(i) {
+    }
 
-    // --- Перегрузка арифметических операторов ---
+    // Арифметические операторы
     Complex operator+(const Complex& other) const {
         return Complex(re + other.re, im + other.im);
     }
+
     Complex operator-(const Complex& other) const {
         return Complex(re - other.re, im - other.im);
     }
+
     Complex operator*(const Complex& other) const {
         return Complex(re * other.re - im * other.im, re * other.im + im * other.re);
     }
+
     Complex operator/(const Complex& other) const {
         double denom = other.re * other.re + other.im * other.im;
-        if (denom == 0.0) throw MathError("Division by zero in complex numbers");
+        if (denom == 0.0) {
+            throw MathError("Division by zero in complex numbers");
+        }
         return Complex((re * other.re + im * other.im) / denom,
                        (im * other.re - re * other.im) / denom);
     }
 
-    // --- Исправленные операторы сравнения (с учетом машинной точности) ---
+    // Операторы сравнения с учетом машинной точности
     bool operator==(const Complex& other) const {
-        const double EPSILON = 1e-9; // Допустимая погрешность
+        const double EPSILON = 1e-9;
 
-        // Находим разницу
         double diffRe = re - other.re;
         double diffIm = im - other.im;
 
-        // Берем модуль без использования внешних библиотек
-        diffRe = diffRe < 0.0 ? -diffRe : diffRe;
-        diffIm = diffIm < 0.0 ? -diffIm : diffIm;
+        if (diffRe < 0.0) {
+            diffRe = -diffRe;
+        }
+        if (diffIm < 0.0) {
+            diffIm = -diffIm;
+        }
 
         return (diffRe < EPSILON) && (diffIm < EPSILON);
     }

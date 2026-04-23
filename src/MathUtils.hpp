@@ -3,11 +3,18 @@
 
 #include "Complex.hpp"
 
+// Математические утилиты
 class MathUtils {
 private:
+    // Метод Ньютона для вычисления квадратного корня
     static double Sqrt(double n) {
-        if (n <= 0.0) return 0.0;
-        double x = n, y = 1.0, e = 1e-15;
+        if (n <= 0.0) {
+            return 0.0;
+        }
+        double x = n;
+        double y = 1.0;
+        double e = 1e-15;
+
         while (x - y > e) {
             x = (x + y) / 2.0;
             y = n / x;
@@ -16,15 +23,16 @@ private:
     }
 
 public:
-    // 1. Обобщенный шаблон для ВСЕХ типов, поддерживающих оператор '<' и унарный минус
+    // Модуль для обобщенных типов (поддерживающих унарный минус и сравнение)
     template <class T>
     static double Abs(const T& val) {
-        // Используем T() как эквивалент нуля для любого типа
-        return val < T() ? static_cast<double>(-val) : static_cast<double>(val);
+        if (val < T()) {
+            return static_cast<double>(-val);
+        }
+        return static_cast<double>(val);
     }
 
-    // 2. Явная перегрузка для Complex
-    // Компилятор выберет её, так как конкретная функция имеет приоритет над шаблоном
+    // Модуль для комплексных чисел
     static double Abs(const Complex& c) {
         return Sqrt(c.re * c.re + c.im * c.im);
     }

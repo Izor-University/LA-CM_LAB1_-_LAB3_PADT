@@ -1,35 +1,44 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
-#include "MutableArraySequence.hpp"
-#include "Exceptions.hpp"
+
+#include "../LAB2/MutableArraySequence.hpp"
+#include "../LAB2/Exceptions.hpp"
 #include "MathUtils.hpp"
 
+// Вектор
 template <class T>
 class Vector {
 private:
+    // Поля
     MutableArraySequence<T>* data;
     int size;
 
 public:
+    // Конструкторы и деструктор
     explicit Vector(int size);
     Vector(int size, const T& defaultValue);
-    Vector(const Vector<T>& other);      // Copy constructor
-    Vector(Vector<T>&& other) noexcept;  // Move constructor
+    Vector(const Vector<T>& other);
+    Vector(Vector<T>&& other) noexcept;
     ~Vector();
 
-    Vector<T>& operator=(const Vector<T>& other);      // Copy assignment
-    Vector<T>& operator=(Vector<T>&& other) noexcept;  // Move assignment
+    // Операторы присваивания
+    Vector<T>& operator=(const Vector<T>& other);
+    Vector<T>& operator=(Vector<T>&& other) noexcept;
 
+    // Декомпозиция
     int GetSize() const;
     T& operator[](int index);
     const T& operator[](int index) const;
 
+    // Алгебраические операции
     Vector<T> operator+(const Vector<T>& other) const;
     Vector<T> operator-(const Vector<T>& other) const;
     Vector<T> operator*(const T& scalar) const;
     T operator*(const Vector<T>& other) const;
 
+    // Вычисление нормы
     double Norm() const;
 };
+
 #include "Vector.tpp"
-#endif
+#endif // VECTOR_HPP
