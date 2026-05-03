@@ -2,8 +2,9 @@
 #define TRIANGULAR_MATRIX_HPP
 
 #include "IMatrix.hpp"
-#include "../LAB2/MutableArraySequence.hpp"
-#include "../LAB2/Exceptions.hpp"
+#include "Vector.hpp"
+#include "MutableArraySequence.hpp"
+#include "Exceptions.hpp"
 #include "MathUtils.hpp"
 
 // Треугольная матрица
@@ -31,24 +32,28 @@ public:
     TriangularMatrix<T>& operator=(TriangularMatrix<T>&& other) noexcept;
 
     // Декомпозиция
-    int GetRows() const override {
-        return size;
-    }
-    int GetCols() const override {
-        return size;
-    }
-    bool IsLower() const {
-        return isLower;
-    }
+    int GetRows() const override { return size; }
+    int GetCols() const override { return size; }
+    bool IsLower() const { return isLower; }
 
     // Доступ к элементам
-    const T& Get(int row, int col) const override {
-        return (*this)(row, col);
-    }
+    const T& Get(int row, int col) const override { return (*this)(row, col); }
     void Set(int row, int col, const T& value) override;
 
     T& operator()(int row, int col);
     const T& operator()(int row, int col) const;
+
+    // Операторы составного присваивания
+    TriangularMatrix<T>& operator+=(const TriangularMatrix<T>& other);
+    TriangularMatrix<T>& operator-=(const TriangularMatrix<T>& other);
+    TriangularMatrix<T>& operator*=(const T& scalar);
+
+    // Арифметические операторы
+    TriangularMatrix<T> operator+(const TriangularMatrix<T>& other) const;
+    TriangularMatrix<T> operator-(const TriangularMatrix<T>& other) const;
+    TriangularMatrix<T> operator*(const T& scalar) const;
+    TriangularMatrix<T> operator*(const TriangularMatrix<T>& other) const;
+    Vector<T> operator*(const Vector<T>& v) const;
 };
 
 #include "TriangularMatrix.tpp"

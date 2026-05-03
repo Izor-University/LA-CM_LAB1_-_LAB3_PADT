@@ -1,33 +1,61 @@
-// Математика квадратных матриц
+// Операторы составного присваивания
 template <class T>
-Vector<T> SquareMatrix<T>::operator*(const Vector<T>& x) const {
-    if (this->cols != x.GetSize()) {
-        throw InvalidArgument("Size mismatch");
-    }
-    Vector<T> result(this->rows);
+SquareMatrix<T>& SquareMatrix<T>::operator+=(const IMatrix<T>& other) {
+    Matrix<T>::operator+=(other);
+    return *this;
+}
 
-    for (int i = 0; i < this->rows; ++i) {
-        T sum = T();
-        for (int j = 0; j < this->cols; ++j) {
-            sum = sum + (*this)(i, j) * x[j];
-        }
-        result[i] = sum;
-    }
+template <class T>
+SquareMatrix<T>& SquareMatrix<T>::operator-=(const IMatrix<T>& other) {
+    Matrix<T>::operator-=(other);
+    return *this;
+}
+
+template <class T>
+SquareMatrix<T>& SquareMatrix<T>::operator*=(const T& scalar) {
+    Matrix<T>::operator*=(scalar);
+    return *this;
+}
+
+template <class T>
+SquareMatrix<T>& SquareMatrix<T>::operator*=(const SquareMatrix<T>& other) {
+    *this = (*this) * other;
+    return *this;
+}
+
+// Арифметические операторы
+template <class T>
+SquareMatrix<T> SquareMatrix<T>::operator+(const IMatrix<T>& other) const {
+    SquareMatrix<T> result(*this);
+    result += other;
+    return result;
+}
+
+template <class T>
+SquareMatrix<T> SquareMatrix<T>::operator-(const IMatrix<T>& other) const {
+    SquareMatrix<T> result(*this);
+    result -= other;
+    return result;
+}
+
+template <class T>
+SquareMatrix<T> SquareMatrix<T>::operator*(const T& scalar) const {
+    SquareMatrix<T> result(*this);
+    result *= scalar;
     return result;
 }
 
 template <class T>
 SquareMatrix<T> SquareMatrix<T>::operator*(const SquareMatrix<T>& other) const {
-    if (this->cols != other.rows) {
+    if (this->cols != other.GetRows()) {
         throw InvalidArgument("Matrix multiplication mismatch");
     }
     SquareMatrix<T> result(this->rows);
-
     for (int i = 0; i < this->rows; ++i) {
-        for (int j = 0; j < other.cols; ++j) {
+        for (int j = 0; j < other.GetCols(); ++j) {
             T sum = T();
             for (int k = 0; k < this->cols; ++k) {
-                sum = sum + (*this)(i, k) * other(k, j);
+                sum = sum + (*this)(i, k) * other.Get(k, j);
             }
             result(i, j) = sum;
         }
@@ -52,10 +80,8 @@ SquareMatrix<T> SquareMatrix<T>::Identity(int n) {
     }
     SquareMatrix<T> result(n);
     T one = static_cast<T>(1);
-
     for (int i = 0; i < n; ++i) {
         result(i, i) = one;
     }
-
     return result;
 }

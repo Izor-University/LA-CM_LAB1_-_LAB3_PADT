@@ -2,7 +2,7 @@
 template <class T>
 DiagonalMatrix<T>::DiagonalMatrix(int n) : size(n), zeroElement(T()) {
     if (n <= 0) {
-        throw IndexOutOfRange();
+        throw IndexOutOfRange("Size must be positive");
     }
     data = new MutableArraySequence<T>();
     for (int i = 0; i < n; ++i) {
@@ -13,7 +13,7 @@ DiagonalMatrix<T>::DiagonalMatrix(int n) : size(n), zeroElement(T()) {
 template <class T>
 DiagonalMatrix<T>::DiagonalMatrix(int n, const T& defaultValue) : size(n), zeroElement(T()) {
     if (n <= 0) {
-        throw IndexOutOfRange();
+        throw IndexOutOfRange("Size must be positive");
     }
     data = new MutableArraySequence<T>();
     for (int i = 0; i < n; ++i) {
@@ -55,8 +55,8 @@ DiagonalMatrix<T>& DiagonalMatrix<T>::operator=(DiagonalMatrix<T>&& other) noexc
         delete data;
         data = other.data;
         size = other.size;
-
         other.data = nullptr;
+        other.size = 0;
     }
     return *this;
 }
@@ -91,35 +91,69 @@ void DiagonalMatrix<T>::Set(int row, int col, const T& value) {
     }
     if (row != col) {
         if (value != zeroElement) {
-            throw InvalidArgument("Cannot set non-zero outside diagonal.");
+            throw InvalidArgument("Cannot set non-zero value outside diagonal");
         }
         return;
     }
     (*data)[row] = value;
 }
 
-// Алгебраические операции
+// Операторы составного присваивания (O(N))
 template <class T>
-DiagonalMatrix<T> DiagonalMatrix<T>::operator+(const DiagonalMatrix<T>& other) const {
-    if (this->size != other.size) {
-        throw InvalidArgument("Mismatch");
-    }
-    DiagonalMatrix<T> result(this->size);
+DiagonalMatrix<T>& DiagonalMatrix<T>::operator+=(const DiagonalMatrix<T>& other) {
+    if (this->size != other.size) throw InvalidArgument("Mismatch size");
     for (int i = 0; i < size; ++i) {
-        result.data->operator[](i) = (*data)[i] + (*other.data)[i];
+        (*data)[i] = (*data)[i] + (*other.data)[i];
+    }
+    return *this;
+}
+
+template <class T>
+DiagonalMatrix<T>& DiagonalMatrix<T>::operator-=(const DiagonalMatrix<T>& other) {
+    if (this->size != other.size) throw InvalidArgument("Mismatch size");
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] - (*other.data)[i];
+    }
+    return *this;
+}
+
+template <class T>
+DiagonalMatrix<T>& DiagonalMatrix<T>::operator*=(const DiagonalMatrix<T>& other) {
+    if (this->size != other.size) throw InvalidArgument("Mismatch size");
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] * (*other.data)[i];
+    }
+    return *this;
+}
+
+template <class T>
+DiagonalMatrix<T>& DiagonalMatrix<T>::operator*=(const T& scalar) {
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] * scalar;
+    }
+    return *this;
+}
+
+// Арифметические операторы
+template <class T> DiagonalMatrix<T> DiagonalMatrix<T>::operator+(const DiagonalMatrix<T>& other) const { DiagonalMatrix<T> res(*this); res += other; return res; }
+template <class T> DiagonalMatrix<T> DiagonalMatrix<T>::operator-(const DiagonalMatrix<T>& other) const { DiagonalMatrix<T> res(*this); res -= other; return res; }
+template <class T> DiagonalMatrix<T> DiagonalMatrix<T>::operator*(const DiagonalMatrix<T>& other) const { DiagonalMatrix<T> res(*this); res *= other; return res; }
+template <class T> DiagonalMatrix<T> DiagonalMatrix<T>::operator*(const T& scalar) const { DiagonalMatrix<T> res(*this); res *= scalar; return res; }
+
+// Оптимизированное умножение на вектор (O(N))
+template <class T>
+Vector<T> DiagonalMatrix<T>::operator*(const Vector<T>& v) const {
+    if (size != v.GetSize()) {
+        throw InvalidArgument("Mismatch size");
+    }
+    Vector<T> result(size);
+    for (int i = 0; i < size; ++i) {
+        result[i] = (*data)[i] * v[i];
     }
     return result;
 }
 
-template <class T>
-DiagonalMatrix<T> DiagonalMatrix<T>::operator*(const T& scalar) const {
-    DiagonalMatrix<T> result(this->size);
-    for (int i = 0; i < size; ++i) {
-        result.data->operator[](i) = (*data)[i] * scalar;
-    }
-    return result;
-}
-
+// Норма
 template <class T>
 double DiagonalMatrix<T>::Norm() const {
     double maxNorm = 0.0;

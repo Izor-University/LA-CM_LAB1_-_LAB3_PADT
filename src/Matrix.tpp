@@ -57,7 +57,6 @@ Matrix<T>& Matrix<T>::operator=(Matrix<T>&& other) noexcept {
         data = other.data;
         rows = other.rows;
         cols = other.cols;
-
         other.data = nullptr;
         other.rows = 0;
         other.cols = 0;
@@ -82,24 +81,110 @@ const T& Matrix<T>::operator()(int row, int col) const {
     return (*data)[Get1DIndex(row, col)];
 }
 
-// Алгебраические операции
+// Операторы составного присваивания
 template <class T>
-Matrix<T> Matrix<T>::operator+(const Matrix<T>& other) const {
-    if (rows != other.rows || cols != other.cols) {
+Matrix<T>& Matrix<T>::operator+=(const IMatrix<T>& other) {
+    if (rows != other.GetRows() || cols != other.GetCols()) {
         throw InvalidArgument("Dimensions mismatch");
     }
-    Matrix<T> result(rows, cols);
-    for (int i = 0; i < rows * cols; ++i) {
-        (*result.data)[i] = (*data)[i] + (*other.data)[i];
+
+    auto* otherMat = dynamic_cast<const Matrix<T>*>(&other);
+    if (otherMat != nullptr) {
+        for (int i = 0; i < rows * cols; ++i) {
+            (*data)[i] = (*data)[i] + (*otherMat->data)[i];
+        }
+    } else {
+        // Универсальный полиморфный fallback
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                (*this)(i, j) = (*this)(i, j) + other.Get(i, j);
+            }
+        }
     }
+    return *this;
+}
+
+template <class T>
+Matrix<T>& Matrix<T>::operator-=(const IMatrix<T>& other) {
+    if (rows != other.GetRows() || cols != other.GetCols()) {
+        throw InvalidArgument("Dimensions mismatch");
+    }
+
+    auto* otherMat = dynamic_cast<const Matrix<T>*>(&other);
+    if (otherMat != nullptr) {
+        for (int i = 0; i < rows * cols; ++i) {
+            (*data)[i] = (*data)[i] - (*otherMat->data)[i];
+        }
+    } else {
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                (*this)(i, j) = (*this)(i, j) - other.Get(i, j);
+            }
+        }
+    }
+    return *this;
+}
+
+template <class T>
+Matrix<T>& Matrix<T>::operator*=(const T& scalar) {
+    for (int i = 0; i < rows * cols; ++i) {
+        (*data)[i] = (*data)[i] * scalar;
+    }
+    return *this;
+}
+
+// Арифметические операторы
+template <class T>
+Matrix<T> Matrix<T>::operator+(const IMatrix<T>& other) const {
+    Matrix<T> result(*this);
+    result += other;
+    return result;
+}
+
+template <class T>
+Matrix<T> Matrix<T>::operator-(const IMatrix<T>& other) const {
+    Matrix<T> result(*this);
+    result -= other;
     return result;
 }
 
 template <class T>
 Matrix<T> Matrix<T>::operator*(const T& scalar) const {
-    Matrix<T> result(rows, cols);
-    for (int i = 0; i < rows * cols; ++i) {
-        (*result.data)[i] = (*data)[i] * scalar;
+    Matrix<T> result(*this);
+    result *= scalar;
+    return result;
+}
+
+template <class T>
+Matrix<T> Matrix<T>::operator*(const IMatrix<T>& other) const {
+    if (cols != other.GetRows()) {
+        throw InvalidArgument("Matrix multiplication mismatch");
+    }
+    Matrix<T> result(rows, other.GetCols());
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < other.GetCols(); ++j) {
+            T sum = T();
+            for (int k = 0; k < cols; ++k) {
+                sum = sum + (*this)(i, k) * other.Get(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
+template <class T>
+Vector<T> Matrix<T>::operator*(const Vector<T>& v) const {
+    if (cols != v.GetSize()) {
+        throw InvalidArgument("Size mismatch");
+    }
+    Vector<T> result(rows);
+    for (int i = 0; i < rows; ++i) {
+        T sum = T();
+        for (int j = 0; j < cols; ++j) {
+            sum = sum + (*this)(i, j) * v[j];
+        }
+        result[i] = sum;
     }
     return result;
 }
@@ -119,15 +204,13 @@ double Matrix<T>::Norm() const {
     return maxNorm;
 }
 
-// Линейные операции над строками
+// Линейные операции
 template <class T>
 void Matrix<T>::SwapRows(int row1, int row2) {
     if (row1 < 0 || row1 >= rows || row2 < 0 || row2 >= rows) {
         throw IndexOutOfRange();
     }
-    if (row1 == row2) {
-        return;
-    }
+    if (row1 == row2) return;
     for (int j = 0; j < cols; ++j) {
         T temp = (*this)(row1, j);
         (*this)(row1, j) = (*this)(row2, j);

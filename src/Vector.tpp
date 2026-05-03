@@ -54,7 +54,6 @@ Vector<T>& Vector<T>::operator=(Vector<T>&& other) noexcept {
         delete data;
         data = other.data;
         size = other.size;
-
         other.data = nullptr;
         other.size = 0;
     }
@@ -83,37 +82,56 @@ const T& Vector<T>::operator[](int index) const {
     return (*data)[index];
 }
 
-// Алгебраические операции
+// Операторы составного присваивания
+template <class T>
+Vector<T>& Vector<T>::operator+=(const Vector<T>& other) {
+    if (size != other.size) {
+        throw InvalidArgument("Size mismatch");
+    }
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] + other[i];
+    }
+    return *this;
+}
+
+template <class T>
+Vector<T>& Vector<T>::operator-=(const Vector<T>& other) {
+    if (size != other.size) {
+        throw InvalidArgument("Size mismatch");
+    }
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] - other[i];
+    }
+    return *this;
+}
+
+template <class T>
+Vector<T>& Vector<T>::operator*=(const T& scalar) {
+    for (int i = 0; i < size; ++i) {
+        (*data)[i] = (*data)[i] * scalar;
+    }
+    return *this;
+}
+
+// Арифметические операторы
 template <class T>
 Vector<T> Vector<T>::operator+(const Vector<T>& other) const {
-    if (size != other.size) {
-        throw InvalidArgument("Sizes mismatch");
-    }
-    Vector<T> result(size);
-    for (int i = 0; i < size; ++i) {
-        result[i] = (*this)[i] + other[i];
-    }
+    Vector<T> result(*this);
+    result += other;
     return result;
 }
 
 template <class T>
 Vector<T> Vector<T>::operator-(const Vector<T>& other) const {
-    if (size != other.size) {
-        throw InvalidArgument("Sizes mismatch");
-    }
-    Vector<T> result(size);
-    for (int i = 0; i < size; ++i) {
-        result[i] = (*this)[i] - other[i];
-    }
+    Vector<T> result(*this);
+    result -= other;
     return result;
 }
 
 template <class T>
 Vector<T> Vector<T>::operator*(const T& scalar) const {
-    Vector<T> result(size);
-    for (int i = 0; i < size; ++i) {
-        result[i] = (*this)[i] * scalar;
-    }
+    Vector<T> result(*this);
+    result *= scalar;
     return result;
 }
 

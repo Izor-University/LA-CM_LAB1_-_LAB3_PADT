@@ -1,8 +1,8 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
-#include "../LAB2/MutableArraySequence.hpp"
-#include "../LAB2/Exceptions.hpp"
+#include "MutableArraySequence.hpp"
+#include "Exceptions.hpp"
 #include "MathUtils.hpp"
 
 // Вектор
@@ -30,7 +30,12 @@ public:
     T& operator[](int index);
     const T& operator[](int index) const;
 
-    // Алгебраические операции
+    // Операторы составного присваивания
+    Vector<T>& operator+=(const Vector<T>& other);
+    Vector<T>& operator-=(const Vector<T>& other);
+    Vector<T>& operator*=(const T& scalar);
+
+    // Арифметические операторы
     Vector<T> operator+(const Vector<T>& other) const;
     Vector<T> operator-(const Vector<T>& other) const;
     Vector<T> operator*(const T& scalar) const;

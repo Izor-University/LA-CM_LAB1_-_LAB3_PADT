@@ -2,8 +2,9 @@
 #define MATRIX_HPP
 
 #include "IMatrix.hpp"
-#include "../LAB2/MutableArraySequence.hpp"
-#include "../LAB2/Exceptions.hpp"
+#include "Vector.hpp"
+#include "MutableArraySequence.hpp"
+#include "Exceptions.hpp"
 #include "MathUtils.hpp"
 
 // Прямоугольная матрица
@@ -33,26 +34,28 @@ public:
     Matrix<T>& operator=(Matrix<T>&& other) noexcept;
 
     // Декомпозиция
-    int GetRows() const override {
-        return rows;
-    }
-    int GetCols() const override {
-        return cols;
-    }
+    int GetRows() const override { return rows; }
+    int GetCols() const override { return cols; }
 
     // Доступ к элементам
-    const T& Get(int row, int col) const override {
-        return (*this)(row, col);
-    }
-    void Set(int row, int col, const T& value) override {
-        (*this)(row, col) = value;
-    }
+    const T& Get(int row, int col) const override { return (*this)(row, col); }
+    void Set(int row, int col, const T& value) override { (*this)(row, col) = value; }
     T& operator()(int row, int col);
     const T& operator()(int row, int col) const;
 
-    // Алгебраические операции
-    Matrix<T> operator+(const Matrix<T>& other) const;
+    // Операторы составного присваивания
+    Matrix<T>& operator+=(const IMatrix<T>& other);
+    Matrix<T>& operator-=(const IMatrix<T>& other);
+    Matrix<T>& operator*=(const T& scalar);
+
+    // Арифметические операторы
+    Matrix<T> operator+(const IMatrix<T>& other) const;
+    Matrix<T> operator-(const IMatrix<T>& other) const;
     Matrix<T> operator*(const T& scalar) const;
+    Matrix<T> operator*(const IMatrix<T>& other) const;
+    Vector<T> operator*(const Vector<T>& v) const;
+
+    // Вычисление нормы
     double Norm() const;
 
     // Линейные операции над строками
